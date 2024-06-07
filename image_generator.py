@@ -4,6 +4,10 @@ from PIL import Image
 from io import BytesIO
 
 
+# Set your OpenAI API Key
+openai.api_key = "mock-key"
+
+
 class ImageGenerator:
     # Function to generate an image using OpenAI
     def generate_and_save_images(self, prompts, output_file_path, job_id):
