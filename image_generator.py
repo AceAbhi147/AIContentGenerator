@@ -5,7 +5,7 @@ from io import BytesIO
 
 
 # Set your OpenAI API Key
-openai.api_key = "sk-proj-z1v1e3qjxt4boIQkwnnmT3BlbkFJo7F7eip4tIOTOVcopoC9"
+openai.api_key = "mock-key"
 
 
 class ImageGenerator:
