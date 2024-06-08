@@ -6,21 +6,20 @@ from moviepy.editor import VideoFileClip, AudioFileClip, ImageSequenceClip, Text
 
 class VideoGenerator:
 
-    def __init__(self, image_folder, video_path, audio_path, audio_runtime):
+    def __init__(self, image_folder, video_path, audio_path, audio_runtime, image_screen_time, prompts_and_images):
         self.image_folder = image_folder
         self.video_name = f'{video_path}/video.mp4'
         self.audio_file = f'{audio_path}/audio.mp3'
         self.audio_runtime = audio_runtime
+        self.image_screen_time = image_screen_time
+        self.images_order = [image[1] for image in prompts_and_images]
 
-    def __extract_numeric_suffix(self, filename):
-        parts = filename.split('.')
-        if len(parts) > 1:
-            numerical_part = parts[0]
-            try:
-                return int(numerical_part)
-            except ValueError:
-                return 0
-        return 0
+    def __validate_images_and_sort(self):
+        image_file = []
+        for image in self.images_order:
+            if image in os.listdir(self.image_folder):
+                image_file.append(os.path.join(self.image_folder, image))
+        return image_file
 
     def __create_caption(self, textJSON, framesize, font="Helvetica", color='white', highlight_color='yellow',
                          stroke_color='black', stroke_width=1.5):
@@ -133,12 +132,17 @@ class VideoGenerator:
 
     def images_to_video(self):
         print("Generating video from images..................")
-        images = [os.path.join(self.image_folder, img) for img in
-                  sorted(os.listdir(self.image_folder), key=self.__extract_numeric_suffix)
-                  if img.endswith(('.png', '.jpg', '.jpeg', '.webp'))]
-        per_image_screentime = int(self.audio_runtime / len(images))
-        clip = ImageSequenceClip(images, durations=[per_image_screentime] * len(images))
-        clip.write_videofile(self.video_name, fps=1, codec="libx264")
+        images = self.__validate_images_and_sort()
+        final_images = []
+        idx = 0
+        for curr_screen_time in self.image_screen_time:
+            curr_image_idx = idx % len(images)
+            for _ in range(curr_screen_time):
+                final_images.append(images[curr_image_idx])
+            idx += 1
+
+        clip = ImageSequenceClip(final_images, fps=1)
+        clip.write_videofile(self.video_name, codec="libx264")
         print("Video generated and saved at " + str(self.video_name) + "\n\n")
 
     def add_subtitles_and_audio_to_video(self, line_level_subtitles):

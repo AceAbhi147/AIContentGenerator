@@ -1,27 +1,40 @@
 import os.path
 import math
 import gtts
+import re
 from faster_whisper import WhisperModel
 from pydub import AudioSegment
 
 
 class AudioGenerator:
+    change_image_pattern = r"\[changeImage\]\s*"
+
     def __init__(self, audio_data, audio_file_path):
-        self.audio_data = self.__get_audio_data(audio_data)
+        data = self.__get_audio_data(audio_data)
+        self.audio_data = data["cleaned"]
+        self.original_audio_data = data["original"]
         self.audio_file_name = f'{audio_file_path}/audio.mp3'
         self.audio_runtime = None
         self.subtitles_context = None
+        self.image_screen_time = []
 
     def __get_audio_data(self, audio_data):
-        audio = ""
+        cleaned_audio = ""
+        original_audio = ""
         if isinstance(audio_data, str):
-            audio = audio_data
+            cleaned_audio = re.sub(self.change_image_pattern, '', audio_data)
+            original_audio = audio_data
         elif isinstance(audio_data, dict):
             if 'Story' in audio_data:
-                audio = audio_data['Story']
+                cleaned_audio = re.sub(self.change_image_pattern, '', audio_data['Story'])
+                original_audio = audio_data['Story']
             if 'Lesson' in audio_data:
-                audio += ' The Lesson - ' + audio_data['Lesson']
-        return audio
+                cleaned_audio += ' The Lesson - ' + re.sub(self.change_image_pattern, '', audio_data['Lesson'])
+                original_audio += ' The Lesson - ' + audio_data['Lesson']
+        return {
+            "cleaned": cleaned_audio,
+            "original": original_audio
+        }
 
     def __split_text_into_lines(self, word_timestamp):
         print("Starting post-processing so as to add in video file..................")
@@ -98,18 +111,30 @@ class AudioGenerator:
         print("Audio Generated and Saved in: " + str(self.audio_file_name) + "\n\n")
 
     def get_subtitles_with_timestamp(self):
-        print("Generating subtitles from audio using Whisper library............")
-        model = WhisperModel("medium")
-        segments, info = model.transcribe(self.audio_file_name, word_timestamps=True)
-        segments = list(segments)
-        word_timestamp = []
-        for segment in segments:
-            for word in segment.words:
-                word_timestamp.append({'word': word.word, 'start': word.start, 'end': word.end})
-        print("Subtitles with timestamp generated!!\n\n")
-        self.subtitles_context = self.__split_text_into_lines(word_timestamp)
+        # print("Generating subtitles from audio using Whisper library............")
+        # model = WhisperModel("medium")
+        # segments, info = model.transcribe(self.audio_file_name, word_timestamps=True)
+        # segments = list(segments)
+        # word_timestamp = []
+        # for segment in segments:
+        #     for word in segment.words:
+        #         word_timestamp.append({'word': word.word, 'start': word.start, 'end': word.end})
+        # print("Subtitles with timestamp generated!!\n\n")
+        # self.subtitles_context = self.__split_text_into_lines(word_timestamp)
 
-        # self.subtitles_context = self.split_text_into_lines(self.get_sample_word_timestamp())
+        word_timestamp = self.get_sample_word_timestamp()
+        original_words = re.split(r'\s+', self.original_audio_data)
+        count = 0
+        last_timestamp = 0
+        for i in range(len(original_words)):
+            if re.match(self.change_image_pattern, original_words[i]):
+                curr_timestamp = int(round(word_timestamp[i - count]["start"]))
+                self.image_screen_time.append(curr_timestamp - last_timestamp)
+                count += 1
+                last_timestamp = curr_timestamp
+
+
+        self.subtitles_context = self.__split_text_into_lines(word_timestamp)
 
     def get_sample_word_timestamp(self):
         return [
