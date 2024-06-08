@@ -8,21 +8,21 @@ PARENT_FOLDER_ID = "15NeqZ-007biTeo_GxsYc_97i77nW0D6L"  # Id of the folder under
 
 
 class Uploader:
-    def __init__(self, file_path, file_name, to="GDrive"):
+    def __init__(self, ffile_with_path, to="GDrive"):
         self.to = to
-        self.file_with_path = os.path.join(file_path, file_name)
-        self.file_name = file_name
+        self.file_with_path = ffile_with_path
 
     def __authenticate(self):
         creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
         return creds
 
     def upload(self):
+        print("Starting to upload the video file to " + self.to + "..........................")
         creds = self.__authenticate()
         service = build('drive', 'v3', credentials=creds)
-
+        file_name = self.file_with_path.split("/")[-1]
         file_metadata = {
-            'name': self.file_name,
+            'name': file_name,
             'parents': [PARENT_FOLDER_ID]
         }
 
@@ -31,4 +31,4 @@ class Uploader:
             media_body=self.file_with_path
         ).execute()
         print(file)
-
+        print("File uploaded...............\n\n")

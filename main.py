@@ -1,4 +1,6 @@
 import os
+import time
+
 from directory_creator import DirectoryCreator
 from doc_reader import DocReader
 from audio_generator import AudioGenerator
@@ -6,13 +8,14 @@ from image_generator import ImageGenerator
 from video_generator import VideoGenerator
 from uploader import Uploader
 
-
 resources = ['audio', 'image', 'video']
 jobs_dir = os.path.join(os.getcwd(), 'resources/jobs')
 
 for job_file in os.listdir(jobs_dir):
     if job_file.endswith('.doc') or job_file.endswith('.docx'):
         job_id = job_file.split(".")[0]
+        start_time = time.time()
+        print("Starting job for " + job_id + ".............\n")
 
         directory_creator = DirectoryCreator(resources, jobs_dir)
         directories = directory_creator.create_resource_directories(job_id)
@@ -33,7 +36,10 @@ for job_file in os.listdir(jobs_dir):
         video_generator = VideoGenerator(directories["image_dir"], directories["video_dir"], directories["audio_dir"],
                                          audio_generator.audio_runtime)
         video_generator.images_to_video()
-        video_generator.add_subtitles_to_video(audio_generator.subtitles_context)
+        video_generator.add_subtitles_and_audio_to_video(audio_generator.subtitles_context)
 
         # Step 5: Upload file to GDrive
         uploader = Uploader(directories["video_dir"], "video.mp4")
+        uploader.upload()
+        end_time = time.time()
+        print("Job for " + job_id + " completed!! Time taken: " + str(end_time - start_time) + "seconds\n\n")

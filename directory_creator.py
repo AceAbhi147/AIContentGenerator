@@ -8,7 +8,7 @@ class DirectoryCreator:
         self.jobs_dir = jobs_dir
 
     def create_resource_directories(self, job_id):
-        print("Creating the required resources directories")
+        print("Creating the required resources directories......................")
         job_path = os.path.join(self.jobs_dir, job_id)
         result = {
             "job_dir": job_path
@@ -28,5 +28,5 @@ class DirectoryCreator:
                     if os.path.isfile(file_path):
                         os.remove(file_path)
 
-        print("Resources Directory Created")
+        print("Resources Directory Created!!\n\n")
         return result

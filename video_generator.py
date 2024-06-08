@@ -1,9 +1,7 @@
 import cv2
 import os
-import math
-from pydub import AudioSegment
+import time
 from moviepy.editor import VideoFileClip, AudioFileClip, ImageSequenceClip, TextClip, CompositeVideoClip, ColorClip
-from PIL import Image
 
 
 class VideoGenerator:
@@ -25,7 +23,7 @@ class VideoGenerator:
         return 0
 
     def __create_caption(self, textJSON, framesize, font="Helvetica", color='white', highlight_color='yellow',
-                       stroke_color='black', stroke_width=1.5):
+                         stroke_color='black', stroke_width=1.5):
         wordcount = len(textJSON['text_contents'])
         full_duration = textJSON['end'] - textJSON['start']
 
@@ -50,7 +48,7 @@ class VideoGenerator:
         for index, wordJSON in enumerate(textJSON['text_contents']):
             duration = wordJSON['end'] - wordJSON['start']
             word_clip = (TextClip(wordJSON['word'], font=font, fontsize=fontsize, color=color,
-                                 stroke_color=stroke_color, stroke_width=stroke_width)
+                                  stroke_color=stroke_color, stroke_width=stroke_width)
                          .set_start(textJSON['start']).set_duration(full_duration))
             word_clip_space = TextClip(" ", font=font, fontsize=fontsize, color=color).set_start(
                 textJSON['start']).set_duration(full_duration)
@@ -134,14 +132,17 @@ class VideoGenerator:
         video.release()
 
     def images_to_video(self):
+        print("Generating video from images..................")
         images = [os.path.join(self.image_folder, img) for img in
                   sorted(os.listdir(self.image_folder), key=self.__extract_numeric_suffix)
                   if img.endswith(('.png', '.jpg', '.jpeg', '.webp'))]
         per_image_screentime = int(self.audio_runtime / len(images))
         clip = ImageSequenceClip(images, durations=[per_image_screentime] * len(images))
         clip.write_videofile(self.video_name, fps=1, codec="libx264")
+        print("Video generated and saved at " + str(self.video_name) + "\n\n")
 
-    def add_subtitles_to_video(self, line_level_subtitles):
+    def add_subtitles_and_audio_to_video(self, line_level_subtitles):
+        print("Adding subtitles to the generated video.....................")
         input_video = VideoFileClip(self.video_name)
         frame_size = input_video.size
 
@@ -153,8 +154,6 @@ class VideoGenerator:
             max_height = 0
 
             for position in positions:
-                # print (out_clip.pos)
-                # break
                 x_pos, y_pos = position['x_pos'], position['y_pos']
                 width, height = position['width'], position['height']
 
@@ -166,18 +165,18 @@ class VideoGenerator:
             color_clip = color_clip.set_opacity(.6)
             color_clip = color_clip.set_start(line['start']).set_duration(line['end'] - line['start'])
 
-            # centered_clips = [each.set_position('center') for each in out_clips]
-
             clip_to_overlay = CompositeVideoClip([color_clip] + out_clips)
             clip_to_overlay = clip_to_overlay.set_position("bottom")
 
             all_line_level_splits.append(clip_to_overlay)
 
         final_video = CompositeVideoClip([input_video] + all_line_level_splits)
+        print("Subtitles added!!")
 
         # Set the audio of the final video
         final_video = final_video.set_audio(AudioFileClip(self.audio_file))
+        print("Audio added!!")
 
         # Save the final clip as a video file with the audio included
         final_video.write_videofile(self.video_name, fps=24, codec="libx264", audio_codec="aac")
-
+        print("Final Video generated and saved at " + str(self.video_name))

@@ -9,7 +9,6 @@ class AudioGenerator:
     def __init__(self, audio_data, audio_file_path):
         self.audio_data = self.__get_audio_data(audio_data)
         self.audio_file_name = f'{audio_file_path}/audio.mp3'
-        self.model = WhisperModel("medium")
         self.audio_runtime = None
         self.subtitles_context = None
 
@@ -17,7 +16,7 @@ class AudioGenerator:
         audio = ""
         if isinstance(audio_data, str):
             audio = audio_data
-        elif isinstance(audio, dict):
+        elif isinstance(audio_data, dict):
             if 'Story' in audio_data:
                 audio = audio_data['Story']
             if 'Lesson' in audio_data:
@@ -25,6 +24,7 @@ class AudioGenerator:
         return audio
 
     def __split_text_into_lines(self, word_timestamp):
+        print("Starting post-processing so as to add in video file..................")
         max_char = 30
         # max duration in seconds
         max_duration = 2.5
@@ -79,7 +79,7 @@ class AudioGenerator:
                 "text_contents": line
             }
             subtitles.append(subtitle_line)
-
+        print("Subtitles post-processing complete!!\n\n")
         return subtitles
 
     def __get_existing_audio_file_runtime(self):
@@ -91,19 +91,22 @@ class AudioGenerator:
         return int(math.ceil(audio_duration / 1000))
 
     def generate_audio(self):
-        print("Generating audio")
+        print("Generating audio from extracted data..........................")
         audio_gtts = gtts.gTTS(self.audio_data)
         audio_gtts.save(self.audio_file_name)
         self.audio_runtime = self.__get_audio_file_runtime()
-        print("Audio Generated and Saved in: " + str(self.audio_file_name))
+        print("Audio Generated and Saved in: " + str(self.audio_file_name) + "\n\n")
 
     def get_subtitles_with_timestamp(self):
-        segments, info = self.model.transcribe(self.audio_file_name, word_timestamps=True)
+        print("Generating subtitles from audio using Whisper library............")
+        model = WhisperModel("medium")
+        segments, info = model.transcribe(self.audio_file_name, word_timestamps=True)
         segments = list(segments)
         word_timestamp = []
         for segment in segments:
             for word in segment.words:
                 word_timestamp.append({'word': word.word, 'start': word.start, 'end': word.end})
+        print("Subtitles with timestamp generated!!\n\n")
         self.subtitles_context = self.__split_text_into_lines(word_timestamp)
 
         # self.subtitles_context = self.split_text_into_lines(self.get_sample_word_timestamp())

@@ -4,7 +4,6 @@ import requests
 from PIL import Image
 from io import BytesIO
 
-
 # Set your OpenAI API Key
 openai.api_key = "mock-api-key"
 
@@ -25,6 +24,7 @@ class ImageGenerator:
 
     # Function to generate an image using OpenAI
     def generate_and_save_images(self):
+        print("Generating Images using extracted data.....................")
         count = 1
         for prompt in self.prompts:
             response = openai.images.generate(
@@ -40,12 +40,13 @@ class ImageGenerator:
             img = self.__pad_image(img)
             img.save(f'{self.output_file_path}/{count}.png')
             count += 1
-            print("Image generated and saved at: " + self.output_file_path)
+        print("Images generated and saved at: " + self.output_file_path + "!!\n\n")
 
     def pad_all_existing_image(self, images_path=None):
         file_path = self.output_file_path
         if images_path:
             file_path = images_path
+        print("Padding images present in " + str(file_path) + "........................")
 
         if os.path.exists(file_path):
             count = 1
@@ -56,3 +57,5 @@ class ImageGenerator:
                     img = self.__pad_image(img)
                     img.save(f'{self.output_file_path}/{count}.{file_extension}')
                     count += 1
+
+        print("Images Padded and saved in: " + str(self.output_file_path) + "\n\n")
