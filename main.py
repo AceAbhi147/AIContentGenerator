@@ -39,7 +39,7 @@ for job_file in os.listdir(jobs_dir):
         video_generator.add_subtitles_and_audio_to_video(audio_generator.subtitles_context)
 
         # Step 5: Upload file to GDrive
-        uploader = Uploader(directories["video_dir"], "video.mp4")
+        uploader = Uploader(video_generator.video_name, job_id)
         uploader.upload()
         end_time = time.time()
-        print("Job for " + job_id + " completed!! Time taken: " + str(end_time - start_time) + "seconds\n\n")
+        print("Job for " + job_id + " completed!! Time taken: " + str(end_time - start_time) + " seconds\n\n")

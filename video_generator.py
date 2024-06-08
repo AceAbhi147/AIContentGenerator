@@ -177,6 +177,8 @@ class VideoGenerator:
         final_video = final_video.set_audio(AudioFileClip(self.audio_file))
         print("Audio added!!")
 
+        os.remove(self.video_name)
+
         # Save the final clip as a video file with the audio included
         final_video.write_videofile(self.video_name, fps=24, codec="libx264", audio_codec="aac")
         print("Final Video generated and saved at " + str(self.video_name))
