@@ -5,3 +5,5 @@ pillow>=10.3.0
 opencv-python>=4.10.0.82
 docx2txt~=0.8
 requests~=2.32.3
+pydub~=0.25.1
+moviepy~=1.0.3
