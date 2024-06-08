@@ -1,0 +1,5 @@
+__pychache__/
+service-account.json
+output.mp4
+resources/image
+resources/jobs/.*

@@ -7,13 +7,13 @@ from pydub import AudioSegment
 
 class AudioGenerator:
     def __init__(self, audio_data, audio_file_path):
-        self.audio_data = self.get_audio_data(audio_data)
+        self.audio_data = self.__get_audio_data(audio_data)
         self.audio_file_name = f'{audio_file_path}/audio.mp3'
-        # self.model = WhisperModel("medium")
+        self.model = WhisperModel("medium")
         self.audio_runtime = None
         self.subtitles_context = None
 
-    def get_audio_data(self, audio_data):
+    def __get_audio_data(self, audio_data):
         audio = ""
         if isinstance(audio_data, str):
             audio = audio_data
@@ -24,31 +24,7 @@ class AudioGenerator:
                 audio += ' The Lesson - ' + audio_data['Lesson']
         return audio
 
-    def get_existing_audio_file_runtime(self):
-        if os.path.exists(self.audio_file_name):
-            self.audio_runtime = self.get_audio_file_runtime()
-
-    def get_audio_file_runtime(self):
-        audio_duration = len(AudioSegment.from_file(self.audio_file_name))
-        return int(math.ceil(audio_duration / 1000))
-
-    def generate_audio(self):
-        print("Generating audio")
-        audio_gtts = gtts.gTTS(self.audio_data)
-        audio_gtts.save(self.audio_file_name)
-        self.audio_runtime = self.get_audio_file_runtime()
-        print("Audio Generated and Saved in: " + str(self.audio_file_name))
-
-    def get_word_timestamp(self):
-        # segments, info = self.model.transcribe(self.audio_file_name, word_timestamps=True)
-        # segments = list(segments)
-        # word_timestamp = []
-        # for segment in segments:
-        #     for word in segment.words:
-        #         word_timestamp.append({'word': word.word, 'start': word.start, 'end': word.end})
-        self.subtitles_context = self.split_text_into_lines(self.get_sample_word_timestamp())
-
-    def split_text_into_lines(self, word_timestamp):
+    def __split_text_into_lines(self, word_timestamp):
         max_char = 30
         # max duration in seconds
         max_duration = 2.5
@@ -105,6 +81,32 @@ class AudioGenerator:
             subtitles.append(subtitle_line)
 
         return subtitles
+
+    def __get_existing_audio_file_runtime(self):
+        if os.path.exists(self.audio_file_name):
+            self.audio_runtime = self.__get_audio_file_runtime()
+
+    def __get_audio_file_runtime(self):
+        audio_duration = len(AudioSegment.from_file(self.audio_file_name))
+        return int(math.ceil(audio_duration / 1000))
+
+    def generate_audio(self):
+        print("Generating audio")
+        audio_gtts = gtts.gTTS(self.audio_data)
+        audio_gtts.save(self.audio_file_name)
+        self.audio_runtime = self.__get_audio_file_runtime()
+        print("Audio Generated and Saved in: " + str(self.audio_file_name))
+
+    def get_subtitles_with_timestamp(self):
+        segments, info = self.model.transcribe(self.audio_file_name, word_timestamps=True)
+        segments = list(segments)
+        word_timestamp = []
+        for segment in segments:
+            for word in segment.words:
+                word_timestamp.append({'word': word.word, 'start': word.start, 'end': word.end})
+        self.subtitles_context = self.__split_text_into_lines(word_timestamp)
+
+        # self.subtitles_context = self.split_text_into_lines(self.get_sample_word_timestamp())
 
     def get_sample_word_timestamp(self):
         return [

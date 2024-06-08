@@ -8,13 +8,11 @@ from PIL import Image
 
 class VideoGenerator:
 
-    def __init__(self, image_folder, video_path, audio_path):
+    def __init__(self, image_folder, video_path, audio_path, audio_runtime):
         self.image_folder = image_folder
         self.video_name = f'{video_path}/video.mp4'
-        audio_file = f'{audio_path}/audio.mp3'
-        self.audio_file = audio_file
-        audio_duration = len(AudioSegment.from_file(audio_file))
-        self.audio_runtime = int(math.ceil(audio_duration / 1000))
+        self.audio_file = f'{audio_path}/audio.mp3'
+        self.audio_runtime = audio_runtime
 
     def __extract_numeric_suffix(self, filename):
         parts = filename.split('.')
@@ -26,60 +24,7 @@ class VideoGenerator:
                 return 0
         return 0
 
-    def old_images_to_video(self):
-        images = sorted(os.listdir(self.image_folder), key=self.__extract_numeric_suffix)
-        per_image_screentime = int(self.audio_runtime / len(images))
-        avg_height = 0
-        avg_width = 0
-        for image in images:
-            frame = cv2.imread(os.path.join(self.image_folder, image))
-            height, width, layers = frame.shape
-            avg_height += height
-            avg_width += width
-
-        avg_height = int(avg_height / len(images))
-        avg_width = int(avg_width / len(images))
-
-        video = cv2.VideoWriter(self.video_name, cv2.VideoWriter_fourcc(*'mp4v'), 1, (avg_width, avg_height))
-        print("Screen time of each image: " + str(per_image_screentime))
-        for image in images:
-            img = cv2.imread(os.path.join(self.image_folder, image))
-            img = cv2.resize(img, (avg_width, avg_height))
-            for _ in range(per_image_screentime):
-                video.write(img)
-
-        cv2.destroyAllWindows()
-        video.release()
-
-    def images_to_video(self):
-        images = [os.path.join(self.image_folder, img) for img in
-                  sorted(os.listdir(self.image_folder), key=self.__extract_numeric_suffix)
-                  if img.endswith(('.png', '.jpg', '.jpeg', '.webp'))]
-        padded_images = []
-        per_image_screentime = int(self.audio_runtime / len(images))
-        for image in images:
-            img = Image.open(image)
-            padded_image = self.pad_image(img, (1920, 1080))
-
-            if not os.path.exists(os.path.join(self.image_folder, 'padded')):
-                os.makedirs(os.path.join(self.image_folder, 'padded'))
-            padded_image_path = os.path.join(self.image_folder, 'padded', os.path.basename(image))
-            padded_image.save(padded_image_path)
-            for _ in range(per_image_screentime):
-                padded_images.append(padded_image_path)
-
-        clip = ImageSequenceClip(padded_images, fps=1)
-        clip.write_videofile(self.video_name, codec="libx264")
-
-    def pad_image(self, image, target_size):
-        target_width, target_height = target_size
-        background = Image.new('RGB', target_size, (0, 0, 0))
-        width, height = image.size
-        position = ((target_width - width) // 2, (target_height - height) // 2)
-        background.paste(image, position)
-        return background
-
-    def create_caption(self, textJSON, framesize, font="Helvetica", color='white', highlight_color='yellow',
+    def __create_caption(self, textJSON, framesize, font="Helvetica", color='white', highlight_color='yellow',
                        stroke_color='black', stroke_width=1.5):
         wordcount = len(textJSON['text_contents'])
         full_duration = textJSON['end'] - textJSON['start']
@@ -163,14 +108,46 @@ class VideoGenerator:
 
         return word_clips, xy_textclips_positions
 
+    def __old_images_to_video(self):
+        images = sorted(os.listdir(self.image_folder), key=self.__extract_numeric_suffix)
+        per_image_screentime = int(self.audio_runtime / len(images))
+        avg_height = 0
+        avg_width = 0
+        for image in images:
+            frame = cv2.imread(os.path.join(self.image_folder, image))
+            height, width, layers = frame.shape
+            avg_height += height
+            avg_width += width
 
-    def add_subtitles_to_video(self, linelevel_subtitles):
+        avg_height = int(avg_height / len(images))
+        avg_width = int(avg_width / len(images))
+
+        video = cv2.VideoWriter(self.video_name, cv2.VideoWriter_fourcc(*'mp4v'), 1, (avg_width, avg_height))
+        print("Screen time of each image: " + str(per_image_screentime))
+        for image in images:
+            img = cv2.imread(os.path.join(self.image_folder, image))
+            img = cv2.resize(img, (avg_width, avg_height))
+            for _ in range(per_image_screentime):
+                video.write(img)
+
+        cv2.destroyAllWindows()
+        video.release()
+
+    def images_to_video(self):
+        images = [os.path.join(self.image_folder, img) for img in
+                  sorted(os.listdir(self.image_folder), key=self.__extract_numeric_suffix)
+                  if img.endswith(('.png', '.jpg', '.jpeg', '.webp'))]
+        per_image_screentime = int(self.audio_runtime / len(images))
+        clip = ImageSequenceClip(images, durations=[per_image_screentime] * len(images))
+        clip.write_videofile(self.video_name, fps=1, codec="libx264")
+
+    def add_subtitles_to_video(self, line_level_subtitles):
         input_video = VideoFileClip(self.video_name)
         frame_size = input_video.size
 
-        all_linelevel_splits = []
-        for line in linelevel_subtitles:
-            out_clips, positions = self.create_caption(line, frame_size)
+        all_line_level_splits = []
+        for line in line_level_subtitles:
+            out_clips, positions = self.__create_caption(line, frame_size)
 
             max_width = 0
             max_height = 0
@@ -194,13 +171,13 @@ class VideoGenerator:
             clip_to_overlay = CompositeVideoClip([color_clip] + out_clips)
             clip_to_overlay = clip_to_overlay.set_position("bottom")
 
-            all_linelevel_splits.append(clip_to_overlay)
+            all_line_level_splits.append(clip_to_overlay)
 
-        final_video = CompositeVideoClip([input_video] + all_linelevel_splits)
+        final_video = CompositeVideoClip([input_video] + all_line_level_splits)
 
         # Set the audio of the final video
         final_video = final_video.set_audio(AudioFileClip(self.audio_file))
 
         # Save the final clip as a video file with the audio included
-        final_video.write_videofile("output.mp4", fps=24, codec="libx264", audio_codec="aac")
+        final_video.write_videofile(self.video_name, fps=24, codec="libx264", audio_codec="aac")
 

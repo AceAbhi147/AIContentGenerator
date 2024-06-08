@@ -22,5 +22,11 @@ class DirectoryCreator:
             result[f'{resource}_dir'] = resource_dir
             if not os.path.exists(resource_dir):
                 os.makedirs(resource_dir)
+            else:
+                for file in os.listdir(resource_dir):
+                    file_path = os.path.join(resource_dir, file)
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+
         print("Resources Directory Created")
         return result

@@ -4,6 +4,7 @@ from doc_reader import DocReader
 from audio_generator import AudioGenerator
 from image_generator import ImageGenerator
 from video_generator import VideoGenerator
+from uploader import Uploader
 
 
 resources = ['audio', 'image', 'video']
@@ -20,15 +21,19 @@ for job_file in os.listdir(jobs_dir):
         data = DocReader().read_doc(os.path.join(jobs_dir, job_file))
 
         # # Step 2: Fetch and save images from Open AI
-        # ImageGenerator().generate_and_save_images(prompts_and_subtitles["prompts"], config["image_folder"], job_id)
+        image_generator = ImageGenerator(data.get("Prompts"), directories.get("image_dir"))
+        image_generator.pad_all_existing_image(os.path.join(os.getcwd(), "resources/image"))
 
         # Step 3: Generate audio from subtitles
         audio_generator = AudioGenerator(data, directories['audio_dir'])
-        audio_generator.get_word_timestamp()
+        audio_generator.generate_audio()
+        audio_generator.get_subtitles_with_timestamp()
 
         # Step 4: Generate video from images and audio with subtitles
-        video_generator = VideoGenerator(directories["image_dir"], directories["video_dir"], directories["audio_dir"])
+        video_generator = VideoGenerator(directories["image_dir"], directories["video_dir"], directories["audio_dir"],
+                                         audio_generator.audio_runtime)
+        video_generator.images_to_video()
         video_generator.add_subtitles_to_video(audio_generator.subtitles_context)
 
-        # Step 5: Combine Video and Audio
-        # video_generator.combine_audio_and_video()
+        # Step 5: Upload file to GDrive
+        uploader = Uploader(directories["video_dir"], "video.mp4")
