@@ -18,31 +18,31 @@ for job_file in os.listdir(jobs_dir):
         start_time = time.time()
         print("Starting job for " + job_id + ".............\n")
 
+        # Step 1: Clean up existing job's assets
         directory_creator = DirectoryCreator(resources, jobs_dir)
         directories = directory_creator.create_resource_directories(job_id)
 
-        # Step 1: Extract prompts and subtitles
+        # Step 2: Extract prompts and subtitles
         data = DocReader().read_doc(os.path.join(jobs_dir, job_file))
 
-        # # Step 2: Fetch and save images from Open AI
+        # Step 3: Fetch and save images from Open AI
         image_generator = ImageGenerator(data.get("Prompts"), directories["image_dir"])
-        # image_generator.generate_and_save_images()
-        image_generator.pad_all_existing_image(os.path.join(os.getcwd(), "resources/image"))
+        image_generator.generate_and_save_images()
 
-        # Step 3: Generate audio from subtitles
+        # Step 4: Generate audio from subtitles
         audio_generator = AudioGenerator(data, directories['audio_dir'])
         audio_generator.generate_audio()
         audio_generator.get_subtitles_with_timestamp()
 
-        # Step 4: Generate video from images and audio with subtitles
+        # Step 5: Generate video from images and audio with subtitles
         video_generator = VideoGenerator(directories["image_dir"], directories["video_dir"], directories["audio_dir"],
                                          audio_generator.audio_runtime, audio_generator.image_screen_time,
                                          image_generator.prompts_and_images)
         video_generator.images_to_video()
         video_generator.add_subtitles_and_audio_to_video(audio_generator.subtitles_context)
 
-        # Step 5: Upload file to GDrive
+        # Step 6: Upload file to GDrive
         uploader = Uploader(video_generator.video_name, job_id)
-        # uploader.upload()
+        uploader.upload()
         end_time = time.time()
         print("Job for " + job_id + " completed!! Time taken: " + str(end_time - start_time) + " seconds\n\n")

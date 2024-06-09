@@ -38,7 +38,7 @@ class AudioGenerator:
 
     def __split_text_into_lines(self, word_timestamp):
         print("Starting post-processing so as to add in video file..................")
-        max_char = 20
+        max_char = 16
         # max duration in seconds
         max_duration = 2.5
         # Split if nothing is spoken (gap) for these many seconds
@@ -111,18 +111,17 @@ class AudioGenerator:
         print("Audio Generated and Saved in: " + str(self.audio_file_name) + "\n\n")
 
     def get_subtitles_with_timestamp(self):
-        # print("Generating subtitles from audio using Whisper library............")
-        # model = WhisperModel("medium")
-        # segments, info = model.transcribe(self.audio_file_name, word_timestamps=True)
-        # segments = list(segments)
-        # word_timestamp = []
-        # for segment in segments:
-        #     for word in segment.words:
-        #         word_timestamp.append({'word': word.word, 'start': word.start, 'end': word.end})
-        # print("Subtitles with timestamp generated!!\n\n")
-        # self.subtitles_context = self.__split_text_into_lines(word_timestamp)
+        print("Generating subtitles from audio using Whisper library............")
+        model = WhisperModel("medium")
+        segments, info = model.transcribe(self.audio_file_name, word_timestamps=True)
+        segments = list(segments)
+        word_timestamp = []
+        for segment in segments:
+            for word in segment.words:
+                word_timestamp.append({'word': word.word, 'start': word.start, 'end': word.end})
+        print("Subtitles with timestamp generated!!\n\n")
 
-        word_timestamp = self.get_sample_word_timestamp()
+        # word_timestamp = self.get_sample_word_timestamp()
         original_words = re.split(r'\s+', self.original_audio_data)
         count = 0
         last_timestamp = 0
@@ -132,7 +131,6 @@ class AudioGenerator:
                 self.image_screen_time.append(curr_timestamp - last_timestamp)
                 count += 1
                 last_timestamp = curr_timestamp
-
 
         self.subtitles_context = self.__split_text_into_lines(word_timestamp)
 
