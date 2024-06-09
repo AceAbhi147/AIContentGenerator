@@ -52,8 +52,25 @@ Run the main.py file to start the script
 
 &nbsp;
 ## Additional Information:
+
 &nbsp;
-### 1. Changing fonts and color for subtitles
+### 1. Multiple jobs
+This projects supports video creation for multiple job. 
+To do that make sure that the name of the doc containing all the relevant information are unique.
+
+&nbsp;
+### 2. Using Whisper library
+Whisper library is being used in this project to get the timestamp of each word being spoken, which is used for creating 
+subtitles. If the subtitles are not aligned it means the timestamp generated are not accurate. We can configure the library model to be more accurate.
+This can be done by making changes to the following line:
+```
+model = WhisperModel("medium")
+```
+in ``audio_generator.py`` file in ``get_subtitles_with_timestamp`` function.
+Just change the parameter from ``medium`` to ``large``.
+
+&nbsp;
+### 3. Changing fonts and color for subtitles
 The file ```video_generator``` has a following function:
 ```
 def __create_caption(self, textJSON, framesize, font="Loma-Bold", color='yellow4', highlight_color='yellow',
@@ -78,3 +95,7 @@ You can also change the color of the words and the highlighted word by changing 
 ``__create_caption`` function.
 Just like the above function, you can find the available colors by changing ``font`` to ``color``
 in ``dummpy_clip.list('font')``
+
+&nbsp;
+## Sample Video:
+https://drive.google.com/file/d/12_ShRXDho98V5xu6dFvCe2Umo7qzfsme/view?usp=sharing
