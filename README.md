@@ -1,19 +1,36 @@
 # AIContentGenerator - README:
 
+&nbsp;
+&nbsp;
+## Description
+This is a python script that creates a video by fetching series of images from Open-AI using access token and stitching them together.
+Then creates an audio file and subtitles which is then added to the generated video file.
+Finally, the script uploads this video to Google drive.
 
+&nbsp;
+&nbsp;
 ## Pre-requisites
 
-### Python libraries
+&nbsp;
+### 1. Doc file for Subtitles
+A doc file, containing information for video's audio and prompts for image generation from Open-AI, should be present in the ``resources\jobs``
+folder. This file will be used to generate assets folder for this job under ``resources\jobs`` directory. These assets are then used to generate the final video.
+Please take a look at the sample file ``The Script.docx`` present and make sure to adhere to the same format.
+
+This doc contains a ``[changeImage]`` after some texts, which is an indicator to the script to transition to the next image.
+
+&nbsp;
+### 2. Python libraries
 Install all the python libraries using 
 ``pip install -r requirements.txt``
 
-
-### Open-AI Access Token
+&nbsp;
+### 3. Open-AI Access Token
 The project using Open-AI access key which should be added in ```image_generator.py``` file to fetch images from Open-AI Dall-E.
 Make sure to update it using your key.
 
-
-### Dependent library for moviepy python library --> ImageMagick
+&nbsp;
+### 4. Dependent library for moviepy python library --> ImageMagick
 There are some additional libraries that will be required such as ```imagemagick```
 After installing it using   
 ```sudo apt-get install imagemagick``` run the following command:
@@ -21,18 +38,22 @@ After installing it using
 
 If you get permission denied error, just add proper permission to the file using chmod
 
-### Service Account setup for Google Drive upload
+&nbsp;
+### 5. Service Account setup for Google Drive upload
 The project also uploads generated video file to Google Drive, which uses a ``service-account.json`` file that can be configured and downloaded on to the root file of the project.
 Simply follow instructions here to configure your own ``service-account.json`` file.
 https://youtu.be/tamT_iGoZDQ?si=elyrKhOR-09pDS5x
 
-
-### Python version
+&nbsp;
+### 6. Python version
 Run the project using python 3.10 or above.
 Run the main.py file to start the script
 
 
-### Changing fonts and color for subtitles
+&nbsp;
+## Additional Information:
+&nbsp;
+### 1. Changing fonts and color for subtitles
 The file ```video_generator``` has a following function:
 ```
 def __create_caption(self, textJSON, framesize, font="Loma-Bold", color='yellow4', highlight_color='yellow',
