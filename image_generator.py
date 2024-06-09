@@ -14,11 +14,37 @@ class ImageGenerator:
         self.output_file_path = output_file_path
         self.image_dimensions = image_dimensions
 
-    def __pad_image(self, image, target_size=(1920, 1080)):
+    def __resize_image(self, image, target_size=(720, 1280)):
+        original_width, original_height = image.size
+        aspect_ratio = original_width / original_height
+
+        # Calculate new dimensions to fit within the background size
         target_width, target_height = target_size
-        background = Image.new('RGB', target_size, (0, 0, 0))
+        if aspect_ratio > 1:  # Image is wider than it is tall
+            new_width = target_width
+            new_height = int(target_width / aspect_ratio)
+        else:  # Image is taller than it is wide
+            new_height = target_height
+            new_width = int(target_height * aspect_ratio)
+
+        # Ensure the new dimensions fit within the background size
+        if new_width > target_width:
+            new_width = target_width
+            new_height = int(new_width / aspect_ratio)
+        if new_height > target_height:
+            new_height = target_height
+            new_width = int(new_height * aspect_ratio)
+
+        # Resize the image
+        return image.resize((new_width, new_height))
+
+    def __pad_image(self, image, target_size=(720, 1280), bottom_padding=100):
+        image = self.__resize_image(image, target_size)
         width, height = image.size
-        position = ((target_width - width) // 2, (target_height - height) // 2)
+        target_width, target_height = target_size
+        new_target_height = target_height - bottom_padding
+        background = Image.new('RGB', (target_width, target_height), (0, 0, 0))
+        position = ((target_width - width) // 2, (new_target_height - height) // 2)
         background.paste(image, position)
         return background
 

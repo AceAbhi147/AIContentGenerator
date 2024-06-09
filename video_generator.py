@@ -21,9 +21,8 @@ class VideoGenerator:
                 image_file.append(os.path.join(self.image_folder, image))
         return image_file
 
-    def __create_caption(self, textJSON, framesize, font="Helvetica", color='white', highlight_color='yellow',
+    def __create_caption(self, textJSON, framesize, font="Loma-Bold", color='yellow', highlight_color='yellow',
                          stroke_color='black', stroke_width=1.5):
-        wordcount = len(textJSON['text_contents'])
         full_duration = textJSON['end'] - textJSON['start']
 
         word_clips = []
@@ -39,11 +38,7 @@ class VideoGenerator:
 
         max_line_width = frame_width - 2 * (x_buffer)
 
-        fontsize = int(frame_height * 0.075)  # 7.5 percent of video height
-
-        space_width = ""
-        space_height = ""
-
+        fontsize = int(frame_height * 0.04)  # 4 percent of video height
         for index, wordJSON in enumerate(textJSON['text_contents']):
             duration = wordJSON['end'] - wordJSON['start']
             word_clip = (TextClip(wordJSON['word'], font=font, fontsize=fontsize, color=color,
@@ -53,6 +48,7 @@ class VideoGenerator:
                 textJSON['start']).set_duration(full_duration)
             word_width, word_height = word_clip.size
             space_width, space_height = word_clip_space.size
+
             if line_width + word_width + space_width <= max_line_width:
                 # Store info of each word_clip created
                 xy_textclips_positions.append({
@@ -89,7 +85,7 @@ class VideoGenerator:
                     "duration": duration
                 })
 
-                word_clip = word_clip.set_position((x_pos, y_pos))
+                word_clip = word_clip.set_position((x_pos, y_pos)).set_opacity(0.5)
                 word_clip_space = word_clip_space.set_position((x_pos + word_width, y_pos))
                 x_pos = word_width + space_width
 
@@ -104,31 +100,6 @@ class VideoGenerator:
             word_clips.append(word_clip_highlight)
 
         return word_clips, xy_textclips_positions
-
-    def __old_images_to_video(self):
-        images = sorted(os.listdir(self.image_folder), key=self.__extract_numeric_suffix)
-        per_image_screentime = int(self.audio_runtime / len(images))
-        avg_height = 0
-        avg_width = 0
-        for image in images:
-            frame = cv2.imread(os.path.join(self.image_folder, image))
-            height, width, layers = frame.shape
-            avg_height += height
-            avg_width += width
-
-        avg_height = int(avg_height / len(images))
-        avg_width = int(avg_width / len(images))
-
-        video = cv2.VideoWriter(self.video_name, cv2.VideoWriter_fourcc(*'mp4v'), 1, (avg_width, avg_height))
-        print("Screen time of each image: " + str(per_image_screentime))
-        for image in images:
-            img = cv2.imread(os.path.join(self.image_folder, image))
-            img = cv2.resize(img, (avg_width, avg_height))
-            for _ in range(per_image_screentime):
-                video.write(img)
-
-        cv2.destroyAllWindows()
-        video.release()
 
     def images_to_video(self):
         print("Generating video from images..................")
@@ -166,11 +137,11 @@ class VideoGenerator:
 
             color_clip = ColorClip(size=(int(max_width * 1.1), int(max_height * 1.1)),
                                    color=(64, 64, 64))
-            color_clip = color_clip.set_opacity(.6)
+            color_clip = color_clip.set_opacity(0)
             color_clip = color_clip.set_start(line['start']).set_duration(line['end'] - line['start'])
 
             clip_to_overlay = CompositeVideoClip([color_clip] + out_clips)
-            clip_to_overlay = clip_to_overlay.set_position("bottom")
+            clip_to_overlay = clip_to_overlay.set_position(("center", frame_size[1] - max_height - 200))
 
             all_line_level_splits.append(clip_to_overlay)
 

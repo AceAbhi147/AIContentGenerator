@@ -43,6 +43,6 @@ for job_file in os.listdir(jobs_dir):
 
         # Step 5: Upload file to GDrive
         uploader = Uploader(video_generator.video_name, job_id)
-        uploader.upload()
+        # uploader.upload()
         end_time = time.time()
         print("Job for " + job_id + " completed!! Time taken: " + str(end_time - start_time) + " seconds\n\n")
