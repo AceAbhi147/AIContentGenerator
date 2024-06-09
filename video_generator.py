@@ -21,7 +21,7 @@ class VideoGenerator:
                 image_file.append(os.path.join(self.image_folder, image))
         return image_file
 
-    def __create_caption(self, textJSON, framesize, font="Loma-Bold", color='yellow', highlight_color='yellow',
+    def __create_caption(self, textJSON, framesize, font="Loma-Bold", color='yellow4', highlight_color='yellow',
                          stroke_color='black', stroke_width=1.5):
         full_duration = textJSON['end'] - textJSON['start']
 
@@ -85,7 +85,7 @@ class VideoGenerator:
                     "duration": duration
                 })
 
-                word_clip = word_clip.set_position((x_pos, y_pos)).set_opacity(0.5)
+                word_clip = word_clip.set_position((x_pos, y_pos))
                 word_clip_space = word_clip_space.set_position((x_pos + word_width, y_pos))
                 x_pos = word_width + space_width
 

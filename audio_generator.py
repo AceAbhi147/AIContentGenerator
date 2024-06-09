@@ -38,7 +38,7 @@ class AudioGenerator:
 
     def __split_text_into_lines(self, word_timestamp):
         print("Starting post-processing so as to add in video file..................")
-        max_char = 16
+        max_char = 20
         # max duration in seconds
         max_duration = 2.5
         # Split if nothing is spoken (gap) for these many seconds
