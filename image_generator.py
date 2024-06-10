@@ -55,9 +55,11 @@ class ImageGenerator:
             prompt = prompt_and_image[0]
             image_file = prompt_and_image[1]
             response = openai.images.generate(
+                model="dall-e-3",
                 prompt=prompt,
                 n=1,
-                size=self.image_dimensions
+                size=self.image_dimensions,
+                quality="hd"
             )
             image_url = response.data[0].url
 

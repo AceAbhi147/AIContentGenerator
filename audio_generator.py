@@ -38,7 +38,7 @@ class AudioGenerator:
 
     def __split_text_into_lines(self, word_timestamp):
         print("Starting post-processing so as to add in video file..................")
-        max_char = 16
+        max_char = 15
         # max duration in seconds
         max_duration = 2.5
         # Split if nothing is spoken (gap) for these many seconds
@@ -131,7 +131,7 @@ class AudioGenerator:
                 self.image_screen_time.append(curr_timestamp - last_timestamp)
                 count += 1
                 last_timestamp = curr_timestamp
-
+        self.image_screen_time.append(self.audio_runtime - last_timestamp)
         self.subtitles_context = self.__split_text_into_lines(word_timestamp)
 
     def get_sample_word_timestamp(self):
