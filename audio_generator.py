@@ -2,6 +2,7 @@ import os.path
 import math
 import gtts
 import re
+import openai
 from faster_whisper import WhisperModel
 from pydub import AudioSegment
 
@@ -103,10 +104,25 @@ class AudioGenerator:
         audio_duration = len(AudioSegment.from_file(self.audio_file_name))
         return int(math.ceil(audio_duration / 1000))
 
-    def generate_audio(self):
-        print("Generating audio from extracted data..........................")
+    def generate_audio_using_gTTS(self):
+        print("Generating audio from extracted data using Google TTS..........................")
         audio_gtts = gtts.gTTS(self.audio_data)
         audio_gtts.save(self.audio_file_name)
+        self.audio_runtime = self.__get_audio_file_runtime()
+        print("Audio Generated and Saved in: " + str(self.audio_file_name) + "\n\n")
+
+    def generate_audio(self):
+        print("Generating audio from extracted data using Open-AI TTS..........................")
+
+        # Use OpenAI API Key from env properties
+        openai.api_key = os.environ["OPEN_API_ACCESS_TOKEN"]
+
+        response = openai.audio.speech.create(
+            model="tts-1-hd",
+            voice="onyx",
+            input=self.audio_data
+        )
+        response.stream_to_file(self.audio_file_name)
         self.audio_runtime = self.__get_audio_file_runtime()
         print("Audio Generated and Saved in: " + str(self.audio_file_name) + "\n\n")
 

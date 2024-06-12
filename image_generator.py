@@ -4,9 +4,6 @@ import requests
 from PIL import Image
 from io import BytesIO
 
-# Set your OpenAI API Key
-openai.api_key = "mock-api-key"
-
 
 class ImageGenerator:
     def __init__(self, prompts_and_images, output_file_path, image_dimensions="1024x1024"):
@@ -54,6 +51,10 @@ class ImageGenerator:
         for prompt_and_image in self.prompts_and_images:
             prompt = prompt_and_image[0]
             image_file = prompt_and_image[1]
+
+            # Use OpenAI API Key from env properties
+            openai.api_key = os.environ["OPEN_API_ACCESS_TOKEN"]
+
             response = openai.images.generate(
                 model="dall-e-3",
                 prompt=prompt,

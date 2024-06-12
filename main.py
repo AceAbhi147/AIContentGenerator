@@ -12,6 +12,9 @@ from uploader import Uploader
 resources = ['audio', 'image', 'video']
 jobs_dir = os.path.join(os.getcwd(), 'resources/jobs')
 
+# Setting Open-AI access token in environment variable
+os.environ["OPEN_API_ACCESS_TOKEN"] = "mock-api-key"
+
 for job_file in os.listdir(jobs_dir):
     if job_file.endswith('.doc') or job_file.endswith('.docx'):
         job_id = job_file.split(".")[0]

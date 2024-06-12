@@ -26,7 +26,9 @@ Install all the python libraries using
 
 &nbsp;
 ### 3. Open-AI Access Token
-The project using Open-AI access key which should be added in ```image_generator.py``` file to fetch images from Open-AI Dall-E.
+The project using Open-AI access key which should be added in ```main.py``` file to fetch images from Open-AI Dall-E and to generate audio from text using Open AI TTS model.
+Models being used for image generation can be changed by updating the model name in the ``image_generator.py`` file, in ``generate_and_save_images()`` function.
+And same can be done for audio in ``audio_generator.py`` file, in ``generate_audio()`` function.
 Make sure to update it using your key.
 
 &nbsp;
