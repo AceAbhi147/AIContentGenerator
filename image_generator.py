@@ -68,7 +68,7 @@ class ImageGenerator:
             response = requests.get(image_url)
             img = Image.open(BytesIO(response.content))
             img = self.__pad_image(img)
-            img.save(f'{self.output_file_path}/{image_file}')
+            img.save(os.path.join(self.output_file_path, image_file))
         print("Images generated and saved at: " + self.output_file_path + "!!\n\n")
 
     def pad_all_existing_image(self, images_path=None):
@@ -84,7 +84,8 @@ class ImageGenerator:
                     file_extension = file.split(".")[-1]
                     img = Image.open(os.path.join(file_path, file))
                     img = self.__pad_image(img)
-                    img.save(f'{self.output_file_path}/{count}.{file_extension}')
+                    file_name = f'{count}.{file_extension}'
+                    img.save(os.path.join(self.output_file_path, file_name))
                     count += 1
 
         print("Images Padded and saved in: " + str(self.output_file_path) + "\n\n")

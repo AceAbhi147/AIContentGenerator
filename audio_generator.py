@@ -14,7 +14,7 @@ class AudioGenerator:
         data = self.__get_audio_data(audio_data)
         self.audio_data = data["cleaned"]
         self.original_audio_data = data["original"]
-        self.audio_file_name = f'{audio_file_path}/audio.mp3'
+        self.audio_file_name = os.path.join(audio_file_path, "audio.mp3")
         self.audio_runtime = None
         self.subtitles_context = None
         self.image_screen_time = []
@@ -101,6 +101,10 @@ class AudioGenerator:
             self.audio_runtime = self.__get_audio_file_runtime()
 
     def __get_audio_file_runtime(self):
+        audio_duration = len(AudioSegment.from_file(self.audio_file_name))
+        return int(math.ceil(audio_duration / 1000))
+
+    def get_audio_file_runtime(self):
         audio_duration = len(AudioSegment.from_file(self.audio_file_name))
         return int(math.ceil(audio_duration / 1000))
 

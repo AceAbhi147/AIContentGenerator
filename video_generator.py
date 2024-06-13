@@ -1,6 +1,4 @@
-import cv2
 import os
-import time
 from moviepy.editor import VideoFileClip, AudioFileClip, ImageSequenceClip, TextClip, CompositeVideoClip, ColorClip
 
 
@@ -8,8 +6,8 @@ class VideoGenerator:
 
     def __init__(self, image_folder, video_path, audio_path, audio_runtime, image_screen_time, prompts_and_images):
         self.image_folder = image_folder
-        self.video_name = f'{video_path}/video.mp4'
-        self.audio_file = f'{audio_path}/audio.mp3'
+        self.video_name = os.path.join(video_path, "video.mp4")
+        self.audio_file = os.path.join(audio_path, "audio.mp3")
         self.audio_runtime = audio_runtime
         self.image_screen_time = image_screen_time
         self.images_order = [image[1] for image in prompts_and_images]
