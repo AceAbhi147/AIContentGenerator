@@ -1,12 +1,17 @@
 import os
 from moviepy.editor import VideoFileClip, AudioFileClip, ImageSequenceClip, TextClip, CompositeVideoClip, ColorClip
+from moviepy.config import change_settings
+
+
+change_settings({"IMAGEMAGICK_BINARY": r"C:\Program Files\ImageMagick-7.1.1-Q16-HDRI\magick.exe"})
 
 
 class VideoGenerator:
 
     def __init__(self, image_folder, video_path, audio_path, audio_runtime, image_screen_time, prompts_and_images):
         self.image_folder = image_folder
-        self.video_name = os.path.join(video_path, "video.mp4")
+        self.temp_video_name = os.path.join(video_path, "temp_video.mp4")
+        self.final_video_name = os.path.join(video_path, "video.mp4")
         self.audio_file = os.path.join(audio_path, "audio.mp3")
         self.audio_runtime = audio_runtime
         self.image_screen_time = image_screen_time
@@ -111,12 +116,12 @@ class VideoGenerator:
             idx += 1
 
         clip = ImageSequenceClip(final_images, fps=1)
-        clip.write_videofile(self.video_name, codec="libx264")
-        print("Video generated and saved at " + str(self.video_name) + "\n\n")
+        clip.write_videofile(self.temp_video_name, codec="libx264")
+        print("Video generated and saved at " + str(self.temp_video_name) + "\n\n")
 
     def add_subtitles_and_audio_to_video(self, line_level_subtitles):
         print("Adding subtitles to the generated video.....................")
-        input_video = VideoFileClip(self.video_name)
+        input_video = VideoFileClip(self.temp_video_name)
         frame_size = input_video.size
 
         all_line_level_splits = []
@@ -150,8 +155,8 @@ class VideoGenerator:
         final_video = final_video.set_audio(AudioFileClip(self.audio_file))
         print("Audio added!!")
 
-        os.remove(self.video_name)
-
         # Save the final clip as a video file with the audio included
-        final_video.write_videofile(self.video_name, fps=24, codec="libx264", audio_codec="aac")
-        print("Final Video generated and saved at " + str(self.video_name))
+        final_video.write_videofile(self.final_video_name, fps=24, codec="libx264", audio_codec="aac")
+
+        os.remove(self.temp_video_name)
+        print("Final Video generated and saved at " + str(self.final_video_name))

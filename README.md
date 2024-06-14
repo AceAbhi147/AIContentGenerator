@@ -32,22 +32,44 @@ And same can be done for audio in ``audio_generator.py`` file, in ``generate_aud
 Make sure to update it using your key.
 
 &nbsp;
-### 4. Dependent library for moviepy python library --> ImageMagick
+### 5. FFMpeg 
+Install FFMpeg:
+On windows: https://www.youtube.com/watch?v=jZLqNocSQDM (make sure to restart the system)
+On Linux: ```sudo apt-get install ffmpeg```
+
+&nbsp;
+### 6. MS Visual C++ Redistributable pack --> For Windows only
+Download and install ```Microsoft Visual C++ Redistributable 2019```
+https://aka.ms/vs/17/release/vc_redist.x64.exe
+
+&nbsp;
+### 7. Dependent library for moviepy python library --> ImageMagick
 There are some additional libraries that will be required such as ```imagemagick```
+
+On Linux: 
 After installing it using   
 ```sudo apt-get install imagemagick``` run the following command:
 ``cat /etc/ImageMagick-6/policy.xml | sed 's/none/read,write/g'> /etc/ImageMagick-6/policy.xml``
 
 If you get permission denied error, just add proper permission to the file using chmod
 
+On Windows:
+Install it by following the video below.
+https://www.youtube.com/watch?v=JP1eJD_-r3g
+
+Uncomment the following line: 
+```change_settings({"IMAGEMAGICK_BINARY": r"C:\Program Files\ImageMagick-7.1.1-Q16-HDRI\magick.exe"})```
+in ``video_generator.py`` file and make sure that the path of the installed ``magick.exe`` file is correct.
+If not, change it.
+
 &nbsp;
-### 5. Service Account setup for Google Drive upload
+### 8. Service Account setup for Google Drive upload
 The project also uploads generated video file to Google Drive, which uses a ``service-account.json`` file that can be configured and downloaded on to the root file of the project.
 Simply follow instructions here to configure your own ``service-account.json`` file.
 https://youtu.be/tamT_iGoZDQ?si=elyrKhOR-09pDS5x
 
 &nbsp;
-### 6. Python version
+### 9. Python version
 Run the project using python 3.10 or above.
 Run the main.py file to start the script
 
